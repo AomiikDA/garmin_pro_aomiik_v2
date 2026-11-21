@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARMIN PRO HUB v2 // Aomiik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --card-bg: #111827;
+            --card-inner: #172033;
+            --border: #1e293b;
+            --border-light: #2e3f63;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --trail-green: #10b981;
+            --road-blue: #3b82f6;
+            --treadmill-cyan: #06b6d4;
+            --elev-orange: #f59e0b;
+            --strength-purple: #8b5cf6;
+            --pilates-pink: #ec4899;
+            --danger-red: #ef4444;
+            --race-gold: #fbbf24;
+        }
+        * {
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500;
+        }
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 45%),
+                radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 45%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 18px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* Header & Controls */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 18px 24px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand-icon {
+            width: 50px; height: 50px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--trail-green), var(--road-blue));
+            display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .brand h1 { margin: 0; font-size: 1.38rem; font-weight: 700; }
+        .brand p { margin: 2px 0 0 0; font-size: 0.82rem; color: var(--text-sub); }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .select-ctrl, .date-ctrl {
+            background: var(--card-inner);
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .view-toggle {
+            display: flex;
+            background: var(--card-inner);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .view-btn {
+            background: transparent;
+            color: var(--text-sub);
+            border: none;
+            padding: 8px 14px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .view-btn.active {
+            background: var(--trail-green);
+            color: #042f1e;
+            font-weight: 700;
+        }
+        .btn-upload {
+            background: linear-gradient(135deg, var(--road-blue), #2563eb);
+            color: #fff; border: none; padding: 8px 14px; border-radius: 10px;
+            font-weight: 600; font-size: 0.86rem; cursor: pointer;
+        }
+        .btn-upload:hover { opacity: 0.92; }
+        .btn-reset {
+            background: var(--card-inner); color: var(--text-sub);
+            border: 1px solid var(--border-light); padding: 8px 12px;
+            border-radius: 10px; font-size: 0.82rem; cursor: pointer;
+        }
+        .btn-reset:hover { color: var(--text-main); border-color: var(--text-sub); }
+
+        /* 4 Summary KPI Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 18px 20px; position: relative; overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; }
+        .card-run::before { background: var(--trail-green); }
+        .card-elev::before { background: var(--elev-orange); }
+        .card-weight::before { background: var(--strength-purple); }
+        .card-cal::before { background: var(--road-blue); }
+
+        .stat-header { display: flex; justify-content: space-between; align-items: center; color: var(--text-sub); font-size: 0.84rem; gap: 6px; }
+        .stat-value { font-size: 2.05rem; font-weight: 700; margin: 6px 0; display: flex; align-items: baseline; gap: 8px; }
+        .stat-unit { font-size: 0.92rem; color: var(--text-sub); }
+        .stat-breakdown {
+            background: var(--card-inner); padding: 8px 10px; border-radius: 10px;
+            font-size: 0.78rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+        }
+
+        /* Panels */
+        .panel {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 20px 22px; margin-bottom: 20px;
+        }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+        }
+        .panel-title { font-size: 1.12rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+
+        /* Race Pacing Plan Panel */
+        .pacing-banner {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(16, 185, 129, 0.08));
+            border: 1px solid rgba(251, 191, 36, 0.35);
+        }
+        .pacing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .pacing-kpi {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .pacing-kpi-label { font-size: 0.78rem; color: var(--text-sub); }
+        .pacing-kpi-val { font-size: 1.25rem; font-weight: 700; color: var(--race-gold); margin-top: 2px; }
+        .gel-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .gel-pill {
+            background: var(--card-inner);
+            border-left: 3px solid var(--treadmill-cyan);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+        }
+
+        /* UPCOMING BOARD */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .board-col {
+            background: var(--card-inner);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .board-col-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upcoming-card {
+            background: #0f172a;
+            border: 1px solid #263554;
+            border-left: 4px solid var(--trail-green);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        .upcoming-card.type-race { border-left-color: var(--race-gold); background: rgba(251, 191, 36, 0.05); }
+        .upcoming-card.type-rehab { border-left-color: var(--pilates-pink); }
+        .up-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 3px; display: flex; justify-content: space-between; gap: 6px; }
+        .up-meta { font-size: 0.79rem; color: var(--text-sub); margin-bottom: 6px; }
+        .up-badge {
+            display: inline-block; padding: 2px 9px; border-radius: 99px;
+            font-size: 0.73rem; font-weight: 700;
+        }
+        .badge-countdown { background: rgba(251, 191, 36, 0.18); color: var(--race-gold); border: 1px solid var(--race-gold); }
+        .badge-plan { background: rgba(16, 185, 129, 0.15); color: var(--trail-green); }
+        .btn-mini-del {
+            background: transparent; border: none; color: var(--text-sub);
+            cursor: pointer; font-size: 0.85rem; padding: 0 4px;
+        }
+        .btn-mini-del:hover { color: var(--danger-red); }
+
+        .add-up-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+            background: var(--card-inner);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 12px;
+            border: 1px dashed var(--border-light);
+        }
+        .add-up-form input, .add-up-form select {
+            background: #0f172a; border: 1px solid var(--border-light);
+            color: var(--text-main); padding: 8px 10px; border-radius: 8px; font-size: 0.86rem;
+            width: 100%;
+        }
+        .btn-add-up {
+            background: var(--trail-green); color: #042f1e; border: none;
+            border-radius: 8px; font-weight: 700; cursor: pointer; padding: 8px 12px; font-size: 0.86rem;
+        }
+
+        /* CALENDAR VIEW */
+        .calendar-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px; margin-bottom: 12px;
+        }
+        .cal-month-label { font-size: 1.18rem; font-weight: 700; color: var(--trail-green); }
+        .cal-scroll-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 6px;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(120px, 1fr));
+            gap: 7px;
+            min-width: 840px;
+        }
+        .cal-day-header {
+            text-align: center; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-sub); padding: 7px 0; background: var(--card-inner);
+            border-radius: 8px;
+        }
+        .cal-cell {
+            min-height: 108px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 7px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .cal-cell.empty { background: rgba(23, 32, 51, 0.35); border-color: transparent; }
+        .cal-cell.today { border: 2px solid var(--road-blue); }
+        .cal-date-num {
+            font-size: 0.82rem; font-weight: 700; color: var(--text-sub);
+            display: flex; justify-content: space-between; margin-bottom: 2px;
+        }
+        .cal-item {
+            font-size: 0.72rem; padding: 3px 5px; border-radius: 5px;
+            line-height: 1.28; font-weight: 600;
+        }
+        .cal-trail { background: rgba(16, 185, 129, 0.18); color: #34d399; border-left: 3px solid var(--trail-green); }
+        .cal-run { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border-left: 3px solid var(--road-blue); }
+        .cal-treadmill { background: rgba(6, 182, 212, 0.18); color: #22d3ee; border-left: 3px solid var(--treadmill-cyan); }
+        .cal-strength { background: rgba(139, 92, 246, 0.18); color: #c084fc; border-left: 3px solid var(--strength-purple); }
+        .cal-pilates { background: rgba(236, 72, 153, 0.18); color: #f472b6; border-left: 3px solid var(--pilates-pink); }
+        .cal-upcoming { background: rgba(251, 191, 36, 0.18); color: var(--race-gold); border: 1px dashed var(--race-gold); }
+
+        /* Mobile Agenda Cards View inside Calendar */
+        .agenda-list { display: none; flex-direction: column; gap: 8px; }
+        .agenda-day-card {
+            background: var(--card-inner); border: 1px solid var(--border-light);
+            border-radius: 12px; padding: 12px;
+        }
+        .agenda-date { font-size: 0.86rem; font-weight: 700; color: var(--trail-green); margin-bottom: 6px; }
+
+        /* TABLES */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 820px; }
+        th, td { padding: 11px 9px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.86rem; }
+        th { color: var(--text-sub); font-size: 0.75rem; text-transform: uppercase; white-space: nowrap; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        .type-tag { padding: 3px 9px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; display: inline-block; white-space: nowrap; }
+        .tag-trail { background: rgba(16, 185, 129, 0.15); color: var(--trail-green); border: 1px solid var(--trail-green); }
+        .tag-run { background: rgba(59, 130, 246, 0.15); color: var(--road-blue); border: 1px solid var(--road-blue); }
+        .tag-treadmill { background: rgba(6, 182, 212, 0.15); color: var(--treadmill-cyan); border: 1px solid var(--treadmill-cyan); }
+        .tag-strength { background: rgba(139, 92, 246, 0.15); color: var(--strength-purple); border: 1px solid var(--strength-purple); }
+        .tag-pilates { background: rgba(236, 72, 153, 0.15); color: var(--pilates-pink); border: 1px solid var(--pilates-pink); }
+
+        .stop-badge { padding: 2px 7px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; display: inline-block; }
+        .stop-good { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+        .stop-warn { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+        .stop-high { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: #0f172a;
+            border: 1px solid var(--trail-green); color: var(--text-main);
+            padding: 12px 18px; border-radius: 12px; font-size: 0.88rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 999; display: none;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .header-bar { padding: 14px 16px; }
+            .brand h1 { font-size: 1.2rem; }
+            .toolbar { width: 100%; }
+            .select-ctrl, .date-ctrl, .btn-upload { flex: 1 1 auto; font-size: 0.82rem; }
+            .panel { padding: 16px; }
+            .stat-value { font-size: 1.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- TOP HEADER & CONTROLS -->
+    <div class="header-bar">
+        <div class="brand">
+            <div class="brand-icon">⛰️</div>
+            <div>
+                <h1>GARMIN PRO HUB v2 // Aomiik</h1>
+                <p id="headerSubtitle">รวมข้อมูลจริงทั้งหมด (1 ต.ค. – 20 พ.ย. 2026) • Smart CSV Merge • INTHANON 20 Pacing</p>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <select id="periodMode" class="select-ctrl" onchange="onPeriodModeChange()">
+                <option value="month" selected>📆 รายเดือน (Monthly)</option>
+                <option value="day">☀️ รายวัน (Daily)</option>
+                <option value="year">🗓️ รายปี (Yearly)</option>
+                <option value="all">📊 รวมทั้งหมด (All-Time)</option>
+            </select>
+
+            <select id="monthPicker" class="select-ctrl" onchange="renderAll()"></select>
+            <input type="date" id="dayPicker" class="date-ctrl" style="display:none;" onchange="renderAll()">
+            <select id="yearPicker" class="select-ctrl" style="display:none;" onchange="renderAll()"></select>
+
+            <div class="view-toggle">
+                <button id="btnViewList" class="view-btn active" onclick="setViewMode('list')">📋 ลิสต์</button>
+                <button id="btnViewCal" class="view-btn" onclick="setViewMode('calendar')">📅 ปฏิทิน</button>
+            </div>
+
+            <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleGarminCSV(event)">
+            <button class="btn-upload" onclick="document.getElementById('csvInput').click()">📥 รวมไฟล์ CSV</button>
+            <button class="btn-reset" onclick="resetDefault()" title="รีเซ็ตกลับเป็นข้อมูลเริ่มต้น 27 กิจกรรม">รีเซ็ต</button>
+        </div>
+    </div>
+
+    <!-- 4 BIG SUMMARY KPI CARDS -->
+    <div class="summary-grid">
+        <div class="stat-card card-run">
+            <div class="stat-header">
+                <span>🏃‍♀️ ระยะวิ่งรวมทั้งหมด</span>
+                <span id="kpiRunCount">0 ครั้ง</span>
+            </div>
+            <div class="stat-value">
+                <span id="sumDist">0.00</span>
+                <span class="stat-unit">กม.</span>
+            </div>
+            <div class="stat-breakdown">
+                <span style="color:var(--trail-green);">⛰️ เทรล: <strong id="subTrailDist">0</strong></span>
+                <span style="color:var(--road-blue);">👟 ถนน: <strong id="subRoadDist">0</strong></span>
+                <span style="color:var(--treadmill-cyan);">🏃 ลู่: <strong id="subTreadDist">0</strong></span>
+            </div>
+        </div>
+
+        <div class="stat-card card-elev">
+            <div class="stat-header">
+                <span>⛰️ ความชันสะสม (Total D+)</span>
+                <span id="kpiAscentAvg">เฉลี่ย 0 ม./ครั้ง</span>
+            </div>
+            <div class="stat-value">
+                <span id="sumElev" style="color: var(--elev-orange);">+0</span>
+                <span class="stat-unit">เมตร</span>
+            </div>
+            <div class="stat-breakdown">
+                <span>ขาลง: <strong id="subDescent">0</strong> ม.</span>
+                <span>หยุดพักเทรลเฉลี่ย: <strong id="subAvgStop" style="color:var(--trail-green);">-</strong></span>
+            </div>
+        </div>
+
+        <div class="stat-card card-weight">
+            <div class="stat-header">
+                <span>🏋️‍♀️ เวทเทรนนิ่ง & พิลาทิส</span>
+                <span id="kpiStrengthTime">รวม 0 นาที</span>
+            </div>
+            <div class="stat-value">
+                <span id="sumStrength" style="color: var(--strength-purple);">0</span>
+                <span class="stat-unit">ครั้ง</span>
+            </div>
+            <div class="stat-breakdown">
+                <span style="color:var(--strength-purple);">🏋️‍♀️ เวท: <strong id="subStrCnt">0</strong> (<span id="subSets">0</span> เซต)</span>
+                <span style="color:var(--pilates-pink);">🧘‍♀️ พิลาทิส: <strong id="subPilCnt">0</strong></span>
+            </div>
+        </div>
+
+        <div class="stat-card card-cal">
+            <div class="stat-header">
+                <span>🔥 พลังงาน & นับถอยหลังแข่ง</span>
+                <span id="kpiAvgHr">Avg HR - bpm</span>
+            </div>
+            <div class="stat-value">
+                <span id="sumCal" style="color: var(--road-blue);">0</span>
+                <span class="stat-unit">kcal</span>
+            </div>
+            <div class="stat-breakdown">
+                <span>เวลารวม: <strong id="subTotalHr">0</strong> ชม.</span>
+                <span id="nextRaceCountdownTxt" style="color:var(--race-gold); font-weight:700;">🏁 กำลังคำนวณ...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- RACE PACING PLAN PANEL (INTHANON 20) -->
+    <div class="panel pacing-banner">
+        <div class="panel-header">
+            <h2 class="panel-title">🎯 แผนวิ่งวันแข่งจริง: INTHANON 20 (29 พ.ย. 2026 | ปล่อยตัว 07:00 น.)</h2>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <label style="font-size:0.84rem; color:var(--text-sub);">เป้าเวลาจบ:</label>
+                <select id="targetTimeSelect" class="select-ctrl" onchange="renderPacingPlan()">
+                    <option value="255">4 ชม. 15 นาที (255 นาที)</option>
+                    <option value="270" selected>4 ชม. 30 นาที (270 นาที - เป้าหมาย)</option>
+                    <option value="285">4 ชม. 45 นาที (285 นาที)</option>
+                    <option value="300">5 ชม. 00 นาที (300 นาที)</option>
+                </select>
+                <button class="btn-reset" onclick="togglePacingBody()" id="btnTogglePacing">ซ่อน/แสดง</button>
+            </div>
+        </div>
+
+        <div id="pacingBody">
+            <div class="pacing-grid">
+                <div class="pacing-kpi">
+                    <div class="pacing-kpi-label">เวลาเข้าเส้นชัยเป้าหมาย</div>
+                    <div class="pacing-kpi-val" id="pFinishClock">11:30 น.</div>
+                </div>
+                <div class="pacing-kpi">
+                    <div class="pacing-kpi-label">โควตาเวลาเคลื่อนที่ (Moving Time)</div>
+                    <div class="pacing-kpi-val" style="color:var(--trail-green);" id="pMovingTotal">245 นาที (12:15/กม.)</div>
+                </div>
+                <div class="pacing-kpi">
+                    <div class="pacing-kpi-label">โควตาหยุดพัก / CP รวม (Stop Budget)</div>
+                    <div class="pacing-kpi-val" style="color:var(--elev-orange);" id="pStopTotal">ไม่เกิน 25 นาที (9.3%)</div>
+                </div>
+                <div class="pacing-kpi">
+                    <div class="pacing-kpi-label">โซนหัวใจคุมเกม (Max 192 / RHR 55)</div>
+                    <div class="pacing-kpi-val" style="color:var(--road-blue); font-size:1.05rem;">Z2-Z3 (142–164) | ห้ามแช่ >168</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table style="min-width: 720px;">
+                    <thead>
+                        <tr>
+                            <th>ช่วงเส้นทาง</th>
+                            <th>ระยะ / ความชัน (D+)</th>
+                            <th>เวลาเคลื่อนที่ (Moving Pace)</th>
+                            <th>โควตาหยุด / CP</th>
+                            <th>เวลาออกจากจุด (Clock)</th>
+                            <th>เป้าหมาย HR & แท็กติกหน้างาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pacingTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="gel-strip">
+                <div class="gel-pill"><strong>06:40 น. (ก่อนปล่อยตัว):</strong> จิบน้ำ + เจลซอง 1 (หรือกล้วย/ขนมปังรองท้อง)</div>
+                <div class="gel-pill"><strong>กม. 5–6 (ลงผาหน้าผี):</strong> เจลซอง 2 + จิบเกลือแร่ขณะเดิน/จ๊อก</div>
+                <div class="gel-pill"><strong>กม. 10 (จุด B6 - แม่กลางหลวง):</strong> เติมน้ำเต็มขวด + เจลซอง 3 (หยุดไม่เกิน 5–7 นาที)</div>
+                <div class="gel-pill"><strong>กม. 15–16 (จุด B1 - ก่อนผาดอกเสี้ยว):</strong> เจลซอง 4 (คาเฟอีน) + เกลือแร่กันตะคริว</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOARD: UPCOMING RACES & PLANNED ACTIVITIES -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">📌 บอร์ดกิจกรรมและงานแข่งที่จะมาถึง (Upcoming Board)</h2>
+            <span style="font-size:0.82rem; color:var(--text-sub);">เชื่อมกับตารางปฏิทินและตัวนับถอยหลังอัตโนมัติ</span>
+        </div>
+
+        <div class="board-grid">
+            <div class="board-col">
+                <div class="board-col-title">
+                    <span style="color:var(--race-gold);">🏁 สนามแข่งขันเป้าหมาย (Races)</span>
+                    <span id="cntRaces">0</span>
+                </div>
+                <div id="boardRaces"></div>
+            </div>
+
+            <div class="board-col">
+                <div class="board-col-title">
+                    <span style="color:var(--trail-green);">⛰️ แผนซ้อมวิ่ง / Taper (Planned Runs)</span>
+                    <span id="cntRuns">0</span>
+                </div>
+                <div id="boardRuns"></div>
+            </div>
+
+            <div class="board-col">
+                <div class="board-col-title">
+                    <span style="color:var(--pilates-pink);">🧘‍♀️ เวท / พิลาทิส / ฟื้นฟูเข่า (Rehab)</span>
+                    <span id="cntRehab">0</span>
+                </div>
+                <div id="boardRehab"></div>
+            </div>
+        </div>
+
+        <div class="add-up-form">
+            <select id="upCategory">
+                <option value="race">🏁 สนามแข่งขัน (Race)</option>
+                <option value="run">⛰️ แผนซ้อมวิ่ง/เทรล (Run Plan)</option>
+                <option value="rehab">🧘‍♀️ เวท/พิลาทิส/ฟื้นฟูเข่า</option>
+            </select>
+            <input type="date" id="upDate">
+            <input type="text" id="upTitle" placeholder="ชื่อกิจกรรม (เช่น วิ่งโซน 2 30 นาที)">
+            <input type="text" id="upNote" placeholder="รายละเอียด (เช่น คุม HR < 145)">
+            <button class="btn-add-up" onclick="addUpcomingItem()">+ เพิ่มลงบอร์ด & ปฏิทิน</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT: LIST VIEW vs CALENDAR VIEW -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title" id="mainViewHeader">📋 รายการกิจกรรม (List View)</h2>
+            <div id="calendarMonthQuickNav" style="display:none; gap:6px; flex-wrap:wrap;">
+                <button class="btn-reset" onclick="stepCalendarMonth(-1)">◀ เดือนก่อนหน้า</button>
+                <button class="btn-reset" onclick="stepCalendarMonth(1)">เดือนถัดไป ▶</button>
+                <button class="btn-reset" id="btnCalLayoutToggle" onclick="toggleCalLayout()">📱 สลับแบบการ์ดมือถือ</button>
+            </div>
+        </div>
+
+        <!-- 1. LIST VIEW -->
+        <div id="listViewContainer" class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>วันที่ / เวลา</th>
+                        <th>ประเภท</th>
+                        <th>ชื่อกิจกรรม</th>
+                        <th>ระยะทาง</th>
+                        <th>ความชัน (D+ / D-)</th>
+                        <th>Moving / Elapsed Pace</th>
+                        <th>หยุดพัก (Stop %)</th>
+                        <th>Avg / Max HR</th>
+                        <th>TE</th>
+                        <th>แคลอรี / BB</th>
+                    </tr>
+                </thead>
+                <tbody id="activityTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- 2. CALENDAR VIEW -->
+        <div id="calendarViewContainer" style="display: none;">
+            <div class="calendar-nav">
+                <div class="cal-month-label" id="calTitleTxt">พฤศจิกายน 2026</div>
+                <div style="font-size: 0.8rem; color: var(--text-sub); display:flex; flex-wrap:wrap; gap:10px;">
+                    <span style="color:#34d399;">■ เทรล</span>
+                    <span style="color:#60a5fa;">■ ถนน</span>
+                    <span style="color:#22d3ee;">■ ลู่วิ่ง</span>
+                    <span style="color:#c084fc;">■ เวท</span>
+                    <span style="color:#f472b6;">■ พิลาทิส</span>
+                    <span style="color:var(--race-gold);">■ แผน/วันแข่ง</span>
+                </div>
+            </div>
+            <div id="calGridWrap" class="cal-scroll-wrap">
+                <div class="cal-grid" id="calendarGrid"></div>
+            </div>
+            <div id="calAgendaWrap" class="agenda-list"></div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    const defaultGarminActivities = [
+    {
+        "date": "2026-11-20",
+        "time_of_day": "07:54",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Chiang Mai Trail Running",
+        "dist": 2.24,
+        "cal": 184,
+        "time_str": "00:30:49",
+        "duration": 31,
+        "moving_min": 28.2,
+        "elapsed_min": 30.8,
+        "stop_min": 2.6,
+        "stop_pct": 8.5,
+        "moving_pace": "12:35",
+        "elapsed_pace": "13:45",
+        "avgHr": 151,
+        "maxHr": 169,
+        "te": 2.7,
+        "ascent": 110,
+        "descent": 120,
+        "pace": "13:46",
+        "gap": "11:15",
+        "cadence": 103,
+        "reps": 0,
+        "sets": 0,
+        "bb": -6
+    },
+    {
+        "date": "2026-11-20",
+        "time_of_day": "07:15",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Chiang Mai Trail Running",
+        "dist": 3.17,
+        "cal": 253,
+        "time_str": "00:37:31",
+        "duration": 38,
+        "moving_min": 33.4,
+        "elapsed_min": 38.1,
+        "stop_min": 4.7,
+        "stop_pct": 12.4,
+        "moving_pace": "10:32",
+        "elapsed_pace": "12:02",
+        "avgHr": 163,
+        "maxHr": 181,
+        "te": 3.2,
+        "ascent": 165,
+        "descent": 169,
+        "pace": "11:50",
+        "gap": "9:41",
+        "cadence": 110,
+        "reps": 0,
+        "sets": 0,
+        "bb": -10
+    },
+    {
+        "date": "2026-11-19",
+        "time_of_day": "13:47",
+        "type": "pilates",
+        "raw_type": "Pilates",
+        "title": "Pilates",
+        "dist": 0.0,
+        "cal": 48,
+        "time_str": "00:29:05",
+        "duration": 29,
+        "moving_min": 29.1,
+        "elapsed_min": 29.1,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-",
+        "avgHr": 81,
+        "maxHr": 103,
+        "te": 0.1,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 3,
+        "reps": 4,
+        "sets": 1,
+        "bb": -2
+    },
+    {
+        "date": "2026-11-18",
+        "time_of_day": "07:38",
+        "type": "treadmill",
+        "raw_type": "Treadmill Running",
+        "title": "Treadmill Running",
+        "dist": 4.99,
+        "cal": 348,
+        "time_str": "01:06:15",
+        "duration": 66,
+        "moving_min": 52.4,
+        "elapsed_min": 66.2,
+        "stop_min": 13.9,
+        "stop_pct": 20.9,
+        "moving_pace": "10:30",
+        "elapsed_pace": "13:17",
+        "avgHr": 135,
+        "maxHr": 150,
+        "te": 2.8,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "13:16",
+        "gap": "-",
+        "cadence": 101,
+        "reps": 0,
+        "sets": 0,
+        "bb": -11
+    },
+    {
+        "date": "2026-11-17",
+        "time_of_day": "17:40",
+        "type": "treadmill",
+        "raw_type": "Treadmill Running",
+        "title": "Treadmill Running",
+        "dist": 2.12,
+        "cal": 95,
+        "time_str": "00:46:00",
+        "duration": 46,
+        "moving_min": 27.1,
+        "elapsed_min": 46.0,
+        "stop_min": 18.9,
+        "stop_pct": 41.0,
+        "moving_pace": "12:48",
+        "elapsed_pace": "21:42",
+        "avgHr": 90,
+        "maxHr": 114,
+        "te": 0.2,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "21:40",
+        "gap": "-",
+        "cadence": 71,
+        "reps": 0,
+        "sets": 0,
+        "bb": 0
+    },
+    {
+        "date": "2026-11-16",
+        "time_of_day": "12:14",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "Strength",
+        "dist": 0.0,
+        "cal": 344,
+        "time_str": "02:23:18",
+        "duration": 143,
+        "moving_min": 143.3,
+        "elapsed_min": 143.3,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-",
+        "avgHr": 96,
+        "maxHr": 145,
+        "te": 0.6,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 4,
+        "sets": 1,
+        "bb": -13
+    },
+    {
+        "date": "2026-11-15",
+        "time_of_day": "12:53",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "Strength",
+        "dist": 0.0,
+        "cal": 205,
+        "time_str": "01:54:08",
+        "duration": 114,
+        "moving_min": 114.1,
+        "elapsed_min": 114.1,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-",
+        "avgHr": 85,
+        "maxHr": 151,
+        "te": 0.4,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 4,
+        "sets": 1,
+        "bb": -7
+    },
+    {
+        "date": "2026-11-14",
+        "time_of_day": "07:23",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Chiang Mai Trail Running",
+        "dist": 5.28,
+        "cal": 570,
+        "time_str": "01:31:02",
+        "duration": 91,
+        "moving_min": 74.9,
+        "elapsed_min": 91.3,
+        "stop_min": 16.4,
+        "stop_pct": 18.0,
+        "moving_pace": "14:11",
+        "elapsed_pace": "17:17",
+        "avgHr": 164,
+        "maxHr": 183,
+        "te": 4.3,
+        "ascent": 539,
+        "descent": 555,
+        "pace": "17:14",
+        "gap": "10:56",
+        "cadence": 89,
+        "reps": 0,
+        "sets": 0,
+        "bb": -17
+    },
+    {
+        "date": "2026-11-12",
+        "time_of_day": "07:30",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Chiang Mai Trail Running",
+        "dist": 5.32,
+        "cal": 390,
+        "time_str": "01:21:11",
+        "duration": 81,
+        "moving_min": 66.5,
+        "elapsed_min": 81.2,
+        "stop_min": 14.7,
+        "stop_pct": 18.1,
+        "moving_pace": "12:29",
+        "elapsed_pace": "15:16",
+        "avgHr": 142,
+        "maxHr": 180,
+        "te": 3.4,
+        "ascent": 255,
+        "descent": 258,
+        "pace": "15:16",
+        "gap": "12:38",
+        "cadence": 91,
+        "reps": 0,
+        "sets": 0,
+        "bb": -9
+    },
+    {
+        "date": "2026-11-10",
+        "time_of_day": "16:42",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai Running",
+        "dist": 5.39,
+        "cal": 291,
+        "time_str": "00:44:40",
+        "duration": 45,
+        "moving_min": 44.5,
+        "elapsed_min": 47.5,
+        "stop_min": 3.0,
+        "stop_pct": 6.4,
+        "moving_pace": "8:15",
+        "elapsed_pace": "8:48",
+        "avgHr": 159,
+        "maxHr": 169,
+        "te": 2.9,
+        "ascent": 6,
+        "descent": 13,
+        "pace": "8:18",
+        "gap": "8:18",
+        "cadence": 171,
+        "reps": 0,
+        "sets": 0,
+        "bb": -9
+    },
+    {
+        "date": "2026-11-07",
+        "time_of_day": "07:42",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "Strength",
+        "dist": 0.0,
+        "cal": 133,
+        "time_str": "00:42:28",
+        "duration": 42,
+        "moving_min": 11.8,
+        "elapsed_min": 42.5,
+        "stop_min": 30.6,
+        "stop_pct": 72.2,
+        "moving_pace": "-",
+        "elapsed_pace": "-",
+        "avgHr": 105,
+        "maxHr": 151,
+        "te": 0.9,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 51,
+        "sets": 11,
+        "bb": -4
+    },
+    {
+        "date": "2026-10-31",
+        "time_of_day": "06:29",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Doi Saket - Thep Sadet Trails",
+        "dist": 39.0,
+        "cal": 3135,
+        "time_str": "10:44:27",
+        "duration": 644,
+        "moving_min": 509.3,
+        "elapsed_min": 644.5,
+        "stop_min": 135.2,
+        "stop_pct": 21.0,
+        "moving_pace": "13:04",
+        "elapsed_pace": "16:31",
+        "avgHr": 156,
+        "maxHr": 192,
+        "te": 5.0,
+        "ascent": 2568,
+        "descent": 2563,
+        "pace": "16:31",
+        "gap": "12:56",
+        "cadence": 93,
+        "reps": 0,
+        "sets": 0,
+        "bb": -49
+    },
+    {
+        "date": "2026-10-26",
+        "time_of_day": "17:07",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai Running",
+        "dist": 8.1,
+        "cal": 411,
+        "time_str": "01:22:03",
+        "duration": 82,
+        "moving_min": 81.1,
+        "elapsed_min": 83.8,
+        "stop_min": 2.6,
+        "stop_pct": 3.2,
+        "moving_pace": "10:01",
+        "elapsed_pace": "10:20",
+        "avgHr": 140,
+        "maxHr": 162,
+        "te": 2.4,
+        "ascent": 26,
+        "descent": 24,
+        "pace": "10:08",
+        "gap": "10:09",
+        "cadence": 168,
+        "reps": 0,
+        "sets": 0,
+        "bb": -12
+    },
+    {
+        "date": "2026-10-23",
+        "time_of_day": "17:04",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai Running",
+        "dist": 6.33,
+        "cal": 337,
+        "time_str": "00:59:02",
+        "duration": 59,
+        "moving_min": 59.0,
+        "elapsed_min": 59.2,
+        "stop_min": 0.2,
+        "stop_pct": 0.3,
+        "moving_pace": "9:19",
+        "elapsed_pace": "9:21",
+        "avgHr": 150,
+        "maxHr": 174,
+        "te": 2.9,
+        "ascent": 22,
+        "descent": 22,
+        "pace": "9:19",
+        "gap": "9:18",
+        "cadence": 160,
+        "reps": 0,
+        "sets": 0,
+        "bb": 0
+    },
+    {
+        "date": "2026-10-21",
+        "time_of_day": "16:57",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai Running",
+        "dist": 7.71,
+        "cal": 392,
+        "time_str": "01:19:42",
+        "duration": 80,
+        "moving_min": 79.7,
+        "elapsed_min": 79.7,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "10:20",
+        "elapsed_pace": "10:20",
+        "avgHr": 145,
+        "maxHr": 156,
+        "te": 2.3,
+        "ascent": 24,
+        "descent": 24,
+        "pace": "10:20",
+        "gap": "10:22",
+        "cadence": 171,
+        "reps": 0,
+        "sets": 0,
+        "bb": -11
+    },
+    {
+        "date": "2026-10-19",
+        "time_of_day": "07:17",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Nong Ho",
+        "dist": 8.06,
+        "cal": 699,
+        "time_str": "01:48:47",
+        "duration": 109,
+        "moving_min": 90.8,
+        "elapsed_min": 108.8,
+        "stop_min": 18.0,
+        "stop_pct": 16.5,
+        "moving_pace": "11:16",
+        "elapsed_pace": "13:30",
+        "avgHr": 161,
+        "maxHr": 176,
+        "te": 3.9,
+        "ascent": 522,
+        "descent": 528,
+        "pace": "13:30",
+        "gap": "10:27",
+        "cadence": 106,
+        "reps": 0,
+        "sets": 0,
+        "bb": -24
+    },
+    {
+        "date": "2026-10-17",
+        "time_of_day": "17:26",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai - พื้นฐาน",
+        "dist": 8.53,
+        "cal": 447,
+        "time_str": "01:24:29",
+        "duration": 84,
+        "moving_min": 83.5,
+        "elapsed_min": 84.5,
+        "stop_min": 1.0,
+        "stop_pct": 1.2,
+        "moving_pace": "9:47",
+        "elapsed_pace": "9:54",
+        "avgHr": 147,
+        "maxHr": 163,
+        "te": 2.6,
+        "ascent": 24,
+        "descent": 27,
+        "pace": "9:55",
+        "gap": "9:52",
+        "cadence": 169,
+        "reps": 0,
+        "sets": 0,
+        "bb": -10
+    },
+    {
+        "date": "2026-10-15",
+        "time_of_day": "08:06",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "ความแข็งแกร่ง",
+        "dist": 0.0,
+        "cal": 132,
+        "time_str": "00:36:46",
+        "duration": 37,
+        "moving_min": 11.6,
+        "elapsed_min": 36.8,
+        "stop_min": 25.2,
+        "stop_pct": 68.5,
+        "moving_pace": "-",
+        "elapsed_pace": "-",
+        "avgHr": 113,
+        "maxHr": 165,
+        "te": 1.1,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 82,
+        "sets": 14,
+        "bb": -6
+    },
+    {
+        "date": "2026-10-12",
+        "time_of_day": "06:43",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Nong ho-khunChangKian",
+        "dist": 17.49,
+        "cal": 1556,
+        "time_str": "04:26:56",
+        "duration": 267,
+        "moving_min": 213.2,
+        "elapsed_min": 334.8,
+        "stop_min": 121.7,
+        "stop_pct": 36.3,
+        "moving_pace": "12:11",
+        "elapsed_pace": "19:09",
+        "avgHr": 158,
+        "maxHr": 174,
+        "te": 4.6,
+        "ascent": 1203,
+        "descent": 1205,
+        "pace": "15:16",
+        "gap": "10:53",
+        "cadence": 95,
+        "reps": 0,
+        "sets": 0,
+        "bb": -44
+    },
+    {
+        "date": "2026-10-10",
+        "time_of_day": "16:46",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai Running",
+        "dist": 10.6,
+        "cal": 541,
+        "time_str": "01:47:16",
+        "duration": 107,
+        "moving_min": 106.2,
+        "elapsed_min": 107.3,
+        "stop_min": 1.0,
+        "stop_pct": 1.0,
+        "moving_pace": "10:01",
+        "elapsed_pace": "10:07",
+        "avgHr": 147,
+        "maxHr": 157,
+        "te": 2.7,
+        "ascent": 13,
+        "descent": 22,
+        "pace": "10:07",
+        "gap": "10:09",
+        "cadence": 170,
+        "reps": 0,
+        "sets": 0,
+        "bb": -12
+    },
+    {
+        "date": "2026-10-09",
+        "time_of_day": "07:36",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "ความแข็งแกร่ง",
+        "dist": 0.0,
+        "cal": 154,
+        "time_str": "01:03:21",
+        "duration": 63,
+        "avgHr": 95,
+        "maxHr": 133,
+        "te": 0.2,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 122,
+        "sets": 20,
+        "bb": -7,
+        "moving_min": 63.4,
+        "elapsed_min": 63.4,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-"
+    },
+    {
+        "date": "2026-10-08",
+        "time_of_day": "06:43",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Wang Buaban Hill Repaets",
+        "dist": 7.1,
+        "cal": 508,
+        "time_str": "01:36:57",
+        "duration": 97,
+        "avgHr": 143,
+        "maxHr": 172,
+        "te": 3.1,
+        "ascent": 404,
+        "descent": 403,
+        "pace": "13:40",
+        "gap": "11:33",
+        "cadence": 132,
+        "reps": 0,
+        "sets": 0,
+        "bb": -17,
+        "moving_min": 92.2,
+        "elapsed_min": 97.2,
+        "stop_min": 5.0,
+        "stop_pct": 5.1,
+        "moving_pace": "12:59",
+        "elapsed_pace": "13:41"
+    },
+    {
+        "date": "2026-10-07",
+        "time_of_day": "07:21",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "ความแข็งแกร่ง",
+        "dist": 0.0,
+        "cal": 232,
+        "time_str": "02:06:39",
+        "duration": 127,
+        "avgHr": 86,
+        "maxHr": 118,
+        "te": 0.2,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 70,
+        "sets": 24,
+        "bb": -6,
+        "moving_min": 126.7,
+        "elapsed_min": 126.7,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-"
+    },
+    {
+        "date": "2026-10-05",
+        "time_of_day": "07:13",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Palad-KhunChangKian",
+        "dist": 33.71,
+        "cal": 2490,
+        "time_str": "08:11:47",
+        "duration": 492,
+        "avgHr": 153,
+        "maxHr": 179,
+        "te": 5.0,
+        "ascent": 2034,
+        "descent": 2038,
+        "pace": "14:35",
+        "gap": "11:13",
+        "cadence": 104,
+        "reps": 0,
+        "sets": 0,
+        "bb": 0,
+        "moving_min": 426.1,
+        "elapsed_min": 528.3,
+        "stop_min": 102.2,
+        "stop_pct": 19.4,
+        "moving_pace": "12:38",
+        "elapsed_pace": "15:40"
+    },
+    {
+        "date": "2026-10-03",
+        "time_of_day": "16:56",
+        "type": "run",
+        "raw_type": "Running",
+        "title": "Chiang Mai - พื้นฐาน",
+        "dist": 10.62,
+        "cal": 561,
+        "time_str": "01:48:54",
+        "duration": 109,
+        "avgHr": 151,
+        "maxHr": 172,
+        "te": 2.9,
+        "ascent": 11,
+        "descent": 17,
+        "pace": "10:15",
+        "gap": "10:16",
+        "cadence": 163,
+        "reps": 0,
+        "sets": 0,
+        "bb": -11,
+        "moving_min": 108.9,
+        "elapsed_min": 108.9,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "10:15",
+        "elapsed_pace": "10:15"
+    },
+    {
+        "date": "2026-10-01",
+        "time_of_day": "15:04",
+        "type": "strength",
+        "raw_type": "Strength Training",
+        "title": "ความแข็งแกร่ง",
+        "dist": 0.0,
+        "cal": 205,
+        "time_str": "01:24:07",
+        "duration": 84,
+        "avgHr": 95,
+        "maxHr": 135,
+        "te": 0.4,
+        "ascent": 0,
+        "descent": 0,
+        "pace": "-",
+        "gap": "-",
+        "cadence": 0,
+        "reps": 160,
+        "sets": 27,
+        "bb": -3,
+        "moving_min": 84.1,
+        "elapsed_min": 84.1,
+        "stop_min": 0.0,
+        "stop_pct": 0.0,
+        "moving_pace": "-",
+        "elapsed_pace": "-"
+    },
+    {
+        "date": "2026-10-01",
+        "time_of_day": "06:36",
+        "type": "trail",
+        "raw_type": "Trail Running",
+        "title": "Chiang Mai - การวิ่งระย",
+        "dist": 6.42,
+        "cal": 459,
+        "time_str": "01:22:54",
+        "duration": 83,
+        "avgHr": 149,
+        "maxHr": 176,
+        "te": 3.3,
+        "ascent": 364,
+        "descent": 370,
+        "pace": "12:55",
+        "gap": "10:53",
+        "cadence": 128,
+        "reps": 0,
+        "sets": 0,
+        "bb": -17,
+        "moving_min": 78.2,
+        "elapsed_min": 83.7,
+        "stop_min": 5.4,
+        "stop_pct": 6.5,
+        "moving_pace": "12:11",
+        "elapsed_pace": "13:02"
+    }
+];
+
+    const defaultUpcomingBoard = [
+        {
+            id: 1,
+            category: "race",
+            date: "2026-11-29",
+            title: "INTHANON 20 (Chiang Mai Thailand by UTMB)",
+            note: "ระยะ ~20 กม. | D+ ~860 ม. | เป้า 4:30 ชม. (Moving 245m + Stop 25m)"
+        },
+        {
+            id: 2,
+            category: "run",
+            date: "2026-11-23",
+            title: "จ๊อกเบาๆ โซน 2 (ลู่วิ่งหรือทางราบ)",
+            note: "30–40 นาที | คุม HR 135–145 bpm รักษาความสดของขา"
+        },
+        {
+            id: 3,
+            category: "run",
+            date: "2026-11-25",
+            title: "Shakeout Run เคาะสนิมก่อนแข่ง",
+            note: "วิ่งทางเรียบเบาๆ 4–5 กม. กระตุ้นระบบหายใจแล้วจบเลย"
+        },
+        {
+            id: 4,
+            category: "rehab",
+            date: "2026-11-22",
+            title: "Pilates & ยืดเหยียดยางยืดเซฟเข่า",
+            note: "30 นาที | คลายกล้ามเนื้อหลังเทรล 20 พ.ย. งดเวทขาหนัก"
+        },
+        {
+            id: 5,
+            category: "rehab",
+            date: "2026-11-27",
+            title: "Rest Day & โหลดคาร์บ + เตรียมอุปกรณ์",
+            note: "พักขาเต็มที่ นอนให้พอ เช็กเจล 4 ซอง + เกลือแร่ + นาฬิกา"
+        }
+    ];
+
+    const STORAGE_ACT = 'aomiik_garmin_v2_acts';
+    const STORAGE_UP = 'aomiik_garmin_v2_upcoming';
+
+    let activities = JSON.parse(localStorage.getItem(STORAGE_ACT)) || JSON.parse(JSON.stringify(defaultGarminActivities));
+    let upcomingList = JSON.parse(localStorage.getItem(STORAGE_UP)) || JSON.parse(JSON.stringify(defaultUpcomingBoard));
+    let currentViewMode = 'list';
+    let calMobileAgenda = window.innerWidth <= 768;
+
+    const THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+    function getLocalTodayStr() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3800);
+    }
+
+    function resetDefault() {
+        if (!confirm('รีเซ็ตข้อมูลกลับเป็นชุดเริ่มต้น 27 กิจกรรมจริง (1 ต.ค. – 20 พ.ย.)?')) return;
+        localStorage.removeItem(STORAGE_ACT);
+        localStorage.removeItem(STORAGE_UP);
+        activities = JSON.parse(JSON.stringify(defaultGarminActivities));
+        upcomingList = JSON.parse(JSON.stringify(defaultUpcomingBoard));
+        populateDynamicPickers();
+        renderAll();
+        showToast('รีเซ็ตข้อมูลเป็นค่าเริ่มต้นเรียบร้อยแล้ว');
+    }
+
+    // 3. Auto-populate Month & Year pickers dynamically from all data
+    function populateDynamicPickers(preserveSelection = false) {
+        const monthSel = document.getElementById('monthPicker');
+        const yearSel = document.getElementById('yearPicker');
+        const prevM = monthSel.value;
+        const prevY = yearSel.value;
+
+        const monthsSet = new Set();
+        const yearsSet = new Set();
+        const todayStr = getLocalTodayStr();
+        monthsSet.add(todayStr.slice(0, 7));
+        yearsSet.add(todayStr.slice(0, 4));
+
+        activities.forEach(a => {
+            if (a.date && a.date.length >= 7) {
+                monthsSet.add(a.date.slice(0, 7));
+                yearsSet.add(a.date.slice(0, 4));
+            }
+        });
+        upcomingList.forEach(u => {
+            if (u.date && u.date.length >= 7) {
+                monthsSet.add(u.date.slice(0, 7));
+                yearsSet.add(u.date.slice(0, 4));
+            }
+        });
+
+        const sortedMonths = Array.from(monthsSet).sort().reverse();
+        monthSel.innerHTML = '';
+        sortedMonths.forEach(ym => {
+            const [y, m] = ym.split('-').map(Number);
+            const opt = document.createElement('option');
+            opt.value = ym;
+            opt.textContent = `${THAI_MONTHS[m] || m} ${y}`;
+            monthSel.appendChild(opt);
+        });
+
+        const sortedYears = Array.from(yearsSet).sort().reverse();
+        yearSel.innerHTML = '';
+        sortedYears.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = `ปี ${y}`;
+            yearSel.appendChild(opt);
+        });
+
+        if (preserveSelection && sortedMonths.includes(prevM)) monthSel.value = prevM;
+        else if (sortedMonths.includes(todayStr.slice(0, 7))) monthSel.value = todayStr.slice(0, 7);
+
+        if (preserveSelection && sortedYears.includes(prevY)) yearSel.value = prevY;
+        else if (sortedYears.includes(todayStr.slice(0, 4))) yearSel.value = todayStr.slice(0, 4);
+
+        const dayPicker = document.getElementById('dayPicker');
+        if (!dayPicker.value) dayPicker.value = activities.length > 0 ? activities[0].date : todayStr;
+        const upDate = document.getElementById('upDate');
+        if (!upDate.value) upDate.value = todayStr;
+    }
+
+    function onPeriodModeChange() {
+        const mode = document.getElementById('periodMode').value;
+        document.getElementById('monthPicker').style.display = (mode === 'month') ? 'inline-block' : 'none';
+        document.getElementById('dayPicker').style.display = (mode === 'day') ? 'inline-block' : 'none';
+        document.getElementById('yearPicker').style.display = (mode === 'year') ? 'inline-block' : 'none';
+        renderAll();
+    }
+
+    function setViewMode(mode) {
+        currentViewMode = mode;
+        document.getElementById('btnViewList').classList.toggle('active', mode === 'list');
+        document.getElementById('btnViewCal').classList.toggle('active', mode === 'calendar');
+        document.getElementById('listViewContainer').style.display = (mode === 'list') ? 'block' : 'none';
+        document.getElementById('calendarViewContainer').style.display = (mode === 'calendar') ? 'block' : 'none';
+        document.getElementById('calendarMonthQuickNav').style.display = (mode === 'calendar') ? 'flex' : 'none';
+        renderAll();
+    }
+
+    function toggleCalLayout() {
+        calMobileAgenda = !calMobileAgenda;
+        renderAll();
+    }
+
+    function stepCalendarMonth(delta) {
+        document.getElementById('periodMode').value = 'month';
+        onPeriodModeChange();
+        const sel = document.getElementById('monthPicker');
+        let [y, m] = sel.value.split('-').map(Number);
+        m += delta;
+        if (m < 1) { m = 12; y -= 1; }
+        if (m > 12) { m = 1; y += 1; }
+        const nextYm = `${y}-${String(m).padStart(2, '0')}`;
+        if (!Array.from(sel.options).some(o => o.value === nextYm)) {
+            const opt = document.createElement('option');
+            opt.value = nextYm;
+            opt.textContent = `${THAI_MONTHS[m]} ${y}`;
+            sel.appendChild(opt);
+        }
+        sel.value = nextYm;
+        renderAll();
+    }
+
+    function togglePacingBody() {
+        const body = document.getElementById('pacingBody');
+        body.style.display = (body.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function formatPaceStr(minPerKm) {
+        if (!minPerKm || minPerKm <= 0 || minPerKm > 60) return '-';
+        let m = Math.floor(minPerKm);
+        let s = Math.round((minPerKm - m) * 60);
+        if (s === 60) { m++; s = 0; }
+        return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatClock(startMinFromMidnight, addMins) {
+        const total = Math.round(startMinFromMidnight + addMins);
+        const h = Math.floor(total / 60) % 24;
+        const m = total % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} น.`;
+    }
+
+    // 5. Interactive Race Pacing Plan Calculator
+    function renderPacingPlan() {
+        const totalTarget = parseInt(document.getElementById('targetTimeSelect').value) || 270;
+        const stopTotal = totalTarget <= 255 ? 20 : (totalTarget <= 270 ? 25 : 30);
+        const movTotal = totalTarget - stopTotal;
+        const startMin = 7 * 60; // 07:00
+
+        document.getElementById('pFinishClock').innerText = formatClock(startMin, totalTarget);
+        document.getElementById('pMovingTotal').innerText = `${movTotal} นาที (${formatPaceStr(movTotal / 20)}/กม.)`;
+        document.getElementById('pStopTotal').innerText = `ไม่เกิน ${stopTotal} นาที (${(stopTotal / totalTarget * 100).toFixed(1)}%)`;
+
+        // Proportional split matching our 245m moving (124 / 68 / 53) and 25m stop (10 / 10 / 5)
+        const s1Mov = Math.round(movTotal * (124 / 245));
+        const s2Mov = Math.round(movTotal * (68 / 245));
+        const s3Mov = movTotal - s1Mov - s2Mov;
+
+        const s1Stop = Math.round(stopTotal * 0.4);
+        const s2Stop = Math.round(stopTotal * 0.4);
+        const s3Stop = stopTotal - s1Stop - s2Stop;
+
+        const t1 = s1Mov + s1Stop;
+        const t2 = t1 + s2Mov + s2Stop;
+        const t3 = t2 + s3Mov + s3Stop;
+
+        const rows = [
+            {
+                name: "1. สตาร์ท → B6 (ผาหน้าผี + เนินกลาง)",
+                dist: "0–10 กม. (D+ ~450 ม.)",
+                mov: `${s1Mov} นาที (${formatPaceStr(s1Mov / 10)}/กม.)`,
+                stop: `${s1Stop} นาที (แวะ B6 5–7น.)`,
+                clock: formatClock(startMin, t1),
+                hr: "เฉลี่ย 148–155 bpm | ขึ้นผาหน้าผีห้ามแช่เกิน 168 bpm เดินชันต่อเนื่องไม่หยุดยืน"
+            },
+            {
+                name: "2. B6 → B1 (แม่กลางหลวง → แอ่งกลาง)",
+                dist: "10–16 กม. (D+ ~105 ม.)",
+                mov: `${s2Mov} นาที (${formatPaceStr(s2Mov / 6)}/กม.)`,
+                stop: `${s2Stop} นาที (แวะ B1 5–7น.)`,
+                clock: formatClock(startMin, t2),
+                hr: "เฉลี่ย 142–150 bpm (Zone 2) | ซอยเท้าถี่ลงเขาเซฟเข่า กินเจลขณะเดิน/จ๊อก"
+            },
+            {
+                name: "3. B1 → FIN (ผาดอกเสี้ยว → เส้นชัย)",
+                dist: "16–20 กม. (D+ ~305 ม.)",
+                mov: `${s3Mov} นาที (${formatPaceStr(s3Mov / 4)}/กม.)`,
+                stop: `${s3Stop} นาที (จิบน้ำขณะเดิน)`,
+                clock: formatClock(startMin, t3),
+                hr: "เฉลี่ย 155–165 bpm (Z3–Z4 ต้น) | ไต่ขึ้นสม่ำเสมอ อากาศอุ่น (~16°C) พ้นยอดค่อยไหลเข้าเส้น"
+            }
+        ];
+
+        const tbody = document.getElementById('pacingTableBody');
+        tbody.innerHTML = rows.map(r => `
+            <tr>
+                <td><strong>${r.name}</strong></td>
+                <td style="color:var(--elev-orange);">${r.dist}</td>
+                <td style="color:var(--trail-green); font-weight:700;">${r.mov}</td>
+                <td>${r.stop}</td>
+                <td style="color:var(--race-gold); font-weight:700;">${r.clock}</td>
+                <td style="font-size:0.82rem; color:var(--text-sub);">${r.hr}</td>
+            </tr>
+        `).join('');
+    }
+
+    function addUpcomingItem() {
+        const cat = document.getElementById('upCategory').value;
+        const date = document.getElementById('upDate').value;
+        const title = document.getElementById('upTitle').value.trim();
+        const note = document.getElementById('upNote').value.trim();
+        if (!date || !title) return alert('กรุณาระบุวันที่และชื่อกิจกรรม');
+
+        upcomingList.push({ id: Date.now(), category: cat, date, title, note: note || '-' });
+        upcomingList.sort((a, b) => new Date(a.date) - new Date(b.date));
+        localStorage.setItem(STORAGE_UP, JSON.stringify(upcomingList));
+        document.getElementById('upTitle').value = '';
+        document.getElementById('upNote').value = '';
+        populateDynamicPickers(true);
+        renderAll();
+        showToast('เพิ่มกิจกรรมลงบอร์ดและปฏิทินเรียบร้อย');
+    }
+
+    function deleteUpcoming(id) {
+        upcomingList = upcomingList.filter(item => item.id !== id);
+        localStorage.setItem(STORAGE_UP, JSON.stringify(upcomingList));
+        renderAll();
+    }
+
+    function getFilteredActivities() {
+        const mode = document.getElementById('periodMode').value;
+        if (mode === 'day') {
+            const d = document.getElementById('dayPicker').value;
+            return activities.filter(a => a.date === d);
+        } else if (mode === 'month') {
+            const m = document.getElementById('monthPicker').value;
+            return activities.filter(a => a.date.startsWith(m));
+        } else if (mode === 'year') {
+            const y = document.getElementById('yearPicker').value;
+            return activities.filter(a => a.date.startsWith(y));
+        }
+        return activities;
+    }
+
+    function renderUpcomingBoard() {
+        const todayMidnight = new Date();
+        todayMidnight.setHours(0, 0, 0, 0);
+
+        const racesDiv = document.getElementById('boardRaces');
+        const runsDiv = document.getElementById('boardRuns');
+        const rehabDiv = document.getElementById('boardRehab');
+        racesDiv.innerHTML = ''; runsDiv.innerHTML = ''; rehabDiv.innerHTML = '';
+
+        let cRace = 0, cRun = 0, cRehab = 0;
+        let nextRace = null;
+
+        upcomingList.forEach(item => {
+            const [yy, mm, dd] = item.date.split('-').map(Number);
+            const target = new Date(yy, mm - 1, dd);
+            const diffDays = Math.round((target - todayMidnight) / (1000 * 60 * 60 * 24));
+            const dayTxt = diffDays > 0 ? `อีก ${diffDays} วัน` : (diffDays === 0 ? 'วันนี้!' : `ผ่านมาแล้ว ${Math.abs(diffDays)} วัน`);
+
+            if (item.category === 'race' && diffDays >= 0 && !nextRace) {
+                nextRace = { title: item.title, days: diffDays };
+            }
+
+            const cardHtml = `
+                <div class="upcoming-card type-${item.category}">
+                    <div class="up-title">
+                        <span>${item.title}</span>
+                        <button class="btn-mini-del" onclick="deleteUpcoming(${item.id})" title="ลบ">✕</button>
+                    </div>
+                    <div class="up-meta">📅 ${item.date} &bull; ${item.note}</div>
+                    <span class="up-badge ${item.category === 'race' ? 'badge-countdown' : 'badge-plan'}">⏳ ${dayTxt}</span>
+                </div>
+            `;
+            if (item.category === 'race') { racesDiv.innerHTML += cardHtml; cRace++; }
+            else if (item.category === 'run') { runsDiv.innerHTML += cardHtml; cRun++; }
+            else { rehabDiv.innerHTML += cardHtml; cRehab++; }
+        });
+
+        document.getElementById('cntRaces').innerText = cRace;
+        document.getElementById('cntRuns').innerText = cRun;
+        document.getElementById('cntRehab').innerText = cRehab;
+
+        const cdEl = document.getElementById('nextRaceCountdownTxt');
+        if (nextRace) {
+            const shortName = nextRace.title.split('(')[0].trim();
+            cdEl.innerText = nextRace.days === 0 ? `🏁 ${shortName}: วันนี้!` : `🏁 ${shortName}: อีก ${nextRace.days} วัน`;
+        } else {
+            cdEl.innerText = '🏁 ยังไม่มีงานแข่งถัดไป';
+        }
+    }
+
+    function renderCalendar(targetMonth) {
+        if (!targetMonth || !targetMonth.includes('-')) targetMonth = getLocalTodayStr().slice(0, 7);
+        const [year, month] = targetMonth.split('-').map(Number);
+        document.getElementById('calTitleTxt').innerText = `📅 ปฏิทินเดือน ${THAI_MONTHS[month] || month} ${year}`;
+        document.getElementById('btnCalLayoutToggle').innerText = calMobileAgenda ? '🗓️ สลับแบบตาราง 7 วัน' : '📱 สลับแบบการ์ดมือถือ';
+
+        const gridWrap = document.getElementById('calGridWrap');
+        const agendaWrap = document.getElementById('calAgendaWrap');
+        gridWrap.style.display = calMobileAgenda ? 'none' : 'block';
+        agendaWrap.style.display = calMobileAgenda ? 'flex' : 'none';
+
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const todayStr = getLocalTodayStr();
+
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+        agendaWrap.innerHTML = '';
+
+        ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'].forEach(d => {
+            grid.innerHTML += `<div class="cal-day-header">${d}</div>`;
+        });
+        for (let i = 0; i < firstDay; i++) {
+            grid.innerHTML += `<div class="cal-cell empty"></div>`;
+        }
+
+        let agendaCount = 0;
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isToday = (dateStr === todayStr);
+            const dayActs = activities.filter(a => a.date === dateStr);
+            const dayUps = upcomingList.filter(u => u.date === dateStr);
+
+            let itemsHtml = '';
+            dayActs.forEach(a => {
+                if (a.type === 'trail') {
+                    itemsHtml += `<div class="cal-item cal-trail" title="${a.title}">⛰️ ${a.dist}K (+${a.ascent}m)</div>`;
+                } else if (a.type === 'run') {
+                    itemsHtml += `<div class="cal-item cal-run" title="${a.title}">👟 ${a.dist}K (HR ${a.avgHr})</div>`;
+                } else if (a.type === 'treadmill') {
+                    itemsHtml += `<div class="cal-item cal-treadmill" title="${a.title}">🏃 ลู่วิ่ง ${a.dist}K (HR ${a.avgHr})</div>`;
+                } else if (a.type === 'pilates') {
+                    itemsHtml += `<div class="cal-item cal-pilates" title="${a.title}">🧘‍♀️ พิลาทิส ${a.duration}น.</div>`;
+                } else {
+                    itemsHtml += `<div class="cal-item cal-strength" title="${a.title}">🏋️‍♀️ เวท ${a.duration}น.</div>`;
+                }
+            });
+            dayUps.forEach(u => {
+                const icon = u.category === 'race' ? '🏁' : (u.category === 'run' ? '📌' : '🧘‍♀️');
+                itemsHtml += `<div class="cal-item cal-upcoming" title="${u.note}">${icon} ${u.title}</div>`;
+            });
+
+            grid.innerHTML += `
+                <div class="cal-cell ${isToday ? 'today' : ''}">
+                    <div class="cal-date-num">
+                        <span>${day}</span>
+                        ${isToday ? '<span style="color:var(--road-blue); font-size:0.7rem;">วันนี้</span>' : ''}
+                    </div>
+                    ${itemsHtml}
+                </div>
+            `;
+
+            if (dayActs.length > 0 || dayUps.length > 0 || isToday) {
+                agendaCount++;
+                agendaWrap.innerHTML += `
+                    <div class="agenda-day-card" style="${isToday ? 'border-color:var(--road-blue);' : ''}">
+                        <div class="agenda-date">${day} ${THAI_MONTHS[month]} ${year} ${isToday ? '(วันนี้)' : ''}</div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            ${itemsHtml || '<span style="font-size:0.8rem; color:var(--text-sub);">วันพัก (Rest Day)</span>'}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        if (agendaCount === 0) {
+            agendaWrap.innerHTML = '<div style="color:var(--text-sub); font-size:0.88rem; padding:12px;">ยังไม่มีกิจกรรมหรือแผนในเดือนนี้</div>';
+        }
+    }
+
+    function renderAll() {
+        renderUpcomingBoard();
+        renderPacingPlan();
+
+        const filtered = getFilteredActivities();
+        let totalDist = 0, trailDist = 0, roadDist = 0, treadDist = 0;
+        let runCount = 0, trailCount = 0, roadCount = 0, treadCount = 0;
+        let totalAscent = 0, totalDescent = 0;
+        let strengthCount = 0, pilatesCount = 0, strPilMin = 0, totalSets = 0;
+        let totalCal = 0, totalMin = 0, hrSum = 0, hrCnt = 0;
+        let trailStopSum = 0, trailStopCnt = 0;
+
+        filtered.forEach(a => {
+            totalCal += a.cal;
+            totalMin += a.duration;
+            if (a.avgHr > 0) { hrSum += a.avgHr; hrCnt++; }
+
+            if (a.type === 'trail' || a.type === 'run' || a.type === 'treadmill') {
+                totalDist += a.dist;
+                runCount++;
+                totalAscent += a.ascent;
+                totalDescent += a.descent;
+                if (a.type === 'trail') {
+                    trailDist += a.dist; trailCount++;
+                    if (a.elapsed_min > 0) { trailStopSum += a.stop_pct; trailStopCnt++; }
+                } else if (a.type === 'run') {
+                    roadDist += a.dist; roadCount++;
+                } else {
+                    treadDist += a.dist; treadCount++;
+                }
+            } else if (a.type === 'strength') {
+                strengthCount++;
+                strPilMin += a.duration;
+                totalSets += a.sets;
+            } else if (a.type === 'pilates') {
+                pilatesCount++;
+                strPilMin += a.duration;
+            }
+        });
+
+        document.getElementById('headerSubtitle').innerText = `บันทึกทั้งหมด ${activities.length} กิจกรรมจริง • Smart CSV Merge • INTHANON 20 Pacing`;
+
+        document.getElementById('sumDist').innerText = totalDist.toFixed(2);
+        document.getElementById('kpiRunCount').innerText = `วิ่ง ${runCount} ครั้ง`;
+        document.getElementById('subTrailDist').innerText = trailDist.toFixed(1) + 'K';
+        document.getElementById('subRoadDist').innerText = roadDist.toFixed(1) + 'K';
+        document.getElementById('subTreadDist').innerText = treadDist.toFixed(1) + 'K';
+
+        document.getElementById('sumElev').innerText = '+' + totalAscent.toLocaleString();
+        const avgAsc = trailCount > 0 ? Math.round(totalAscent / trailCount) : 0;
+        document.getElementById('kpiAscentAvg').innerText = `เฉลี่ยเทรล +${avgAsc.toLocaleString()} ม./ครั้ง`;
+        document.getElementById('subDescent').innerText = '-' + totalDescent.toLocaleString();
+        const avgStopTxt = trailStopCnt > 0 ? (trailStopSum / trailStopCnt).toFixed(1) + '%' : '-';
+        document.getElementById('subAvgStop').innerText = avgStopTxt;
+
+        document.getElementById('sumStrength').innerText = strengthCount + pilatesCount;
+        document.getElementById('kpiStrengthTime').innerText = `รวม ${strPilMin} นาที (${(strPilMin/60).toFixed(1)} ชม.)`;
+        document.getElementById('subStrCnt').innerText = strengthCount;
+        document.getElementById('subSets').innerText = totalSets;
+        document.getElementById('subPilCnt').innerText = pilatesCount;
+
+        document.getElementById('sumCal').innerText = totalCal.toLocaleString();
+        document.getElementById('subTotalHr').innerText = (totalMin / 60).toFixed(1);
+        document.getElementById('kpiAvgHr').innerText = hrCnt > 0 ? `Avg HR ${Math.round(hrSum/hrCnt)} bpm` : 'Avg HR - bpm';
+
+        // List View Table
+        const mode = document.getElementById('periodMode').value;
+        document.getElementById('mainViewHeader').innerText = currentViewMode === 'list' 
+            ? `📋 รายการกิจกรรม (${filtered.length} รายการ)` 
+            : `📅 ตารางปฏิทินการซ้อมและงานแข่ง`;
+
+        const tbody = document.getElementById('activityTableBody');
+        tbody.innerHTML = '';
+        filtered.forEach(a => {
+            const tag = a.type === 'trail' ? '<span class="type-tag tag-trail">⛰️ Trail</span>' :
+                        a.type === 'run' ? '<span class="type-tag tag-run">👟 Road</span>' :
+                        a.type === 'treadmill' ? '<span class="type-tag tag-treadmill">🏃 Treadmill</span>' :
+                        a.type === 'pilates' ? '<span class="type-tag tag-pilates">🧘‍♀️ Pilates</span>' :
+                        '<span class="type-tag tag-strength">🏋️‍♀️ Strength</span>';
+
+            const distTxt = a.dist > 0 ? `<strong>${a.dist.toFixed(2)} กม.</strong>` : '-';
+            const elevTxt = a.ascent > 0 ? `<span style="color:var(--elev-orange); font-weight:700;">+${a.ascent.toLocaleString()}</span> <small style="color:var(--text-sub);">(-${a.descent.toLocaleString()})</small>` : '-';
+
+            let paceCol = '-';
+            if (a.type === 'strength' || a.type === 'pilates') {
+                paceCol = `<span style="color:var(--text-sub);">${a.time_str}</span>` + (a.sets > 0 ? ` <small style="color:var(--strength-purple);">(${a.sets} เซต)</small>` : '');
+            } else {
+                paceCol = `<strong>${a.moving_pace}</strong> <small style="color:var(--text-sub);">/ ${a.elapsed_pace}</small>` + (a.gap && a.gap !== '-' ? `<br><small style="color:var(--trail-green);">GAP ${a.gap}</small>` : '');
+            }
+
+            let stopCol = '-';
+            if (a.dist > 0) {
+                const cls = a.stop_pct <= 12 ? 'stop-good' : (a.stop_pct <= 18 ? 'stop-warn' : 'stop-high');
+                stopCol = `<span class="stop-badge ${cls}">${a.stop_pct.toFixed(1)}%</span> <small style="color:var(--text-sub);">(${a.stop_min}น.)</small>`;
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="white-space:nowrap;">${a.date} <small style="color:var(--text-sub);">${a.time_of_day}</small></td>
+                    <td>${tag}</td>
+                    <td><strong>${a.title}</strong></td>
+                    <td>${distTxt}</td>
+                    <td>${elevTxt}</td>
+                    <td>${paceCol}</td>
+                    <td>${stopCol}</td>
+                    <td style="white-space:nowrap;">${a.avgHr} / <strong style="color:var(--elev-orange);">${a.maxHr}</strong></td>
+                    <td>${a.te}</td>
+                    <td style="white-space:nowrap;">${a.cal.toLocaleString()} <small style="color:var(--danger-red);">(${a.bb !== 0 ? a.bb : '-'})</small></td>
+                </tr>
+            `;
+        });
+
+        let calMonth = getLocalTodayStr().slice(0, 7);
+        if (mode === 'month') calMonth = document.getElementById('monthPicker').value;
+        else if (mode === 'day') calMonth = document.getElementById('dayPicker').value.slice(0, 7);
+        renderCalendar(calMonth);
+    }
+
+    // 2. Smart Merge CSV Parser (No data loss!)
+    function parseCSVLine(line) {
+        const result = []; let cur = ''; let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') inQuotes = !inQuotes;
+            else if (ch === ',' && !inQuotes) { result.push(cur.trim()); cur = ''; }
+            else cur += ch;
+        }
+        result.push(cur.trim());
+        return result;
+    }
+    function cleanNumber(val, isInt = false) {
+        if (!val || val === '--') return 0;
+        const s = String(val).replace(/,/g, '').replace(/'/g, '').trim();
+        const num = parseFloat(s);
+        if (isNaN(num)) return 0;
+        return isInt ? Math.round(num) : Math.round(num * 100) / 100;
+    }
+    function parseTimeSec(tStr) {
+        if (!tStr || tStr === '--') return 0;
+        const p = String(tStr).trim().split(':');
+        if (p.length === 3) return parseFloat(p[0]) * 3600 + parseFloat(p[1]) * 60 + parseFloat(p[2]);
+        if (p.length === 2) return parseFloat(p[0]) * 60 + parseFloat(p[1]);
+        return 0;
+    }
+
+    function handleGarminCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split(/\r?\n/).filter(l => l.trim() !== '');
+            if (lines.length < 2) return alert('ไฟล์ CSV ไม่มีข้อมูล');
+            const headers = parseCSVLine(lines[0]);
+            const getIdx = (name) => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
+            const existingKeys = new Set(activities.map(a => `${a.date}|${a.time_of_day}|${a.raw_type}|${a.dist}`));
+            let addedCount = 0;
+            let skippedCount = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = parseCSVLine(lines[i]);
+                if (cols.length < 5) continue;
+
+                const rawType = (cols[getIdx('Activity Type')] || '').trim();
+                const lowerType = rawType.toLowerCase();
+                let type = 'other';
+                if (lowerType.includes('trail')) type = 'trail';
+                else if (lowerType.includes('treadmill')) type = 'treadmill';
+                else if (lowerType.includes('running')) type = 'run';
+                else if (lowerType.includes('pilates') || lowerType.includes('yoga') || lowerType.includes('stretch')) type = 'pilates';
+                else if (lowerType.includes('strength') || lowerType.includes('weight')) type = 'strength';
+
+                const dateFull = cols[getIdx('Date')] || '';
+                const dStr = dateFull.slice(0, 10);
+                const tOfDay = dateFull.slice(11, 16);
+                const dist = cleanNumber(cols[getIdx('Distance')]);
+
+                const key = `${dStr}|${tOfDay}|${rawType}|${dist}`;
+                if (existingKeys.has(key)) {
+                    skippedCount++;
+                    continue;
+                }
+
+                const tSec = parseTimeSec(cols[getIdx('Time')]);
+                let movSec = parseTimeSec(cols[getIdx('Moving Time')]);
+                let elpSec = parseTimeSec(cols[getIdx('Elapsed Time')]);
+                if (movSec <= 0) movSec = tSec;
+                if (elpSec < movSec) elpSec = movSec;
+
+                const movMin = Math.round((movSec / 60) * 10) / 10;
+                const elpMin = Math.round((elpSec / 60) * 10) / 10;
+                const stopMin = Math.round(((elpSec - movSec) / 60) * 10) / 10;
+                const stopPct = elpSec > 0 ? Math.round(((elpSec - movSec) / elpSec) * 1000) / 10 : 0;
+
+                activities.push({
+                    date: dStr,
+                    time_of_day: tOfDay,
+                    type: type,
+                    raw_type: rawType,
+                    title: cols[getIdx('Title')] || rawType,
+                    dist: dist,
+                    cal: cleanNumber(cols[getIdx('Calories')], true),
+                    time_str: cols[getIdx('Time')] || '-',
+                    duration: Math.round(tSec / 60),
+                    moving_min: movMin,
+                    elapsed_min: elpMin,
+                    stop_min: stopMin,
+                    stop_pct: stopPct,
+                    moving_pace: dist > 0 ? formatPaceStr(movMin / dist) : '-',
+                    elapsed_pace: dist > 0 ? formatPaceStr(elpMin / dist) : '-',
+                    avgHr: cleanNumber(cols[getIdx('Avg HR')], true),
+                    maxHr: cleanNumber(cols[getIdx('Max HR')], true),
+                    te: cleanNumber(cols[getIdx('Aerobic TE')]),
+                    ascent: cleanNumber(cols[getIdx('Total Ascent')], true),
+                    descent: cleanNumber(cols[getIdx('Total Descent')], true),
+                    pace: cols[getIdx('Avg Pace')] !== '--' ? cols[getIdx('Avg Pace')] : '-',
+                    gap: cols[getIdx('Avg GAP')] !== '--' ? cols[getIdx('Avg GAP')] : '-',
+                    cadence: cleanNumber(cols[getIdx('Avg Run Cadence')], true),
+                    reps: cleanNumber(cols[getIdx('Total Reps')], true),
+                    sets: cleanNumber(cols[getIdx('Total Sets')], true),
+                    bb: cleanNumber(cols[getIdx('Body Battery Drain')], true)
+                });
+                existingKeys.add(key);
+                addedCount++;
+            }
+
+            activities.sort((a, b) => (b.date + b.time_of_day).localeCompare(a.date + a.time_of_day));
+            localStorage.setItem(STORAGE_ACT, JSON.stringify(activities));
+            populateDynamicPickers(true);
+            renderAll();
+            event.target.value = '';
+            showToast(`รวมไฟล์สำเร็จ! เพิ่มใหม่ ${addedCount} กิจกรรม (ข้ามรายการซ้ำ ${skippedCount} รายการ)`);
+        };
+        reader.readAsText(file);
+    }
+
+    populateDynamicPickers(false);
+    renderAll();
+</script>
+
+</body>
+</html>
